@@ -18,18 +18,7 @@ export default {
         <div v-if="currentTab === 'view-profile'">
             <ViewUProfile />
         </div>
-        <div v-if="currentTab === 'edit-profile'">
-            <EditProfile />
-        </div>
-        <div v-if="currentTab === 'change-password'">
-            <ChangePassword />
-        </div>
-        <div v-if="currentTab === 'issued-books'">
-            <IssuedBooks />
-        </div>
-        <div v-if="currentTab === 'feedbacks'">
-            <Feedbacks />
-        </div>
+        
     </div>
     `,
     data() {
@@ -39,9 +28,9 @@ export default {
     },
     components: {
         ViewUProfile,
-        EditProfile,
-        ChangePassword,
-        IssuedBooks,
-        Feedbacks
+        // EditProfile,
+        // ChangePassword,
+        // IssuedBooks,
+        // Feedbacks
     }
 }

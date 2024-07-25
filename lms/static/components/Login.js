@@ -46,10 +46,12 @@ methods:{
             if(data.token){
                 localStorage.setItem('auth-token', data.token)
                 localStorage.setItem('user-role', data.role)
+                localStorage.setItem('profile-pic-url', data.profile_pic);
                 this.$router.push({ path:'/'})
                 // if condition ---->
             }
             console.log(data)
+            // console.log(localStorage.getItem('profile-pic-url'))
             
         }
         else {

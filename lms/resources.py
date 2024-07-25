@@ -82,11 +82,14 @@ class UserLogin(Resource):
 
                 if not role:
                     return {'message': 'User has no role assigned'}, 400
-
+                profile_pic_url = user.profile_pic
+                
                 return {
                     'token': user.get_auth_token(),
                     'email': user.email,
-                    'role': role
+                    'role': role,
+                    'profile_pic': profile_pic_url
+
                 }, 200
             return {'message': 'Invalid credentials'}, 400
         return {'message': 'User not found'}, 404
@@ -101,9 +104,28 @@ class UserProfile(Resource):
     def get(self):
         user = current_user
         print(user)
+        print(user.profile_pic)
         return {
             'username': user.username,
             'email': user.email,
             'role': user.roles[0].name,
+            'profile_pic': user.profile_pic,
+
             # Add more fields as necessary
-        }
+        }, 200
+    
+
+
+@api.resource('/profile/edit')
+class EditProfile(Resource):
+    @auth_required('token')
+    @roles_required('user')
+    def put(self):
+        data = request.get_json()
+        user = current_user
+        user.username = data.get('username', user.username)
+        user.email = data.get('email', user.email)
+        # Add more fields as necessary
+        db.session.commit()
+        return {'message': 'Profile updated successfully'}
+

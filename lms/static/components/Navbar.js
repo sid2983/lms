@@ -52,6 +52,7 @@ data(){
     return {
         role:localStorage.getItem('user-role'),
         is_login:localStorage.getItem('auth-token'),
+        
 
     }
 },
@@ -66,7 +67,8 @@ methods:{
 },
 computed:{
   avatarUrl(){
-    return '/static/avatar.png';
+    let image_url = localStorage.getItem('profile-pic-url') 
+    return '/static/profile_pics/'+image_url;
   }
 }
 
