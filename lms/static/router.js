@@ -9,6 +9,8 @@ const routes = [
     {path: '/', component: Home },
     {path: '/login', component: Login, name:'Login'},
     {path: '/register', component: Register},
+    {path: '/profile', component: Profile},
+
 ]
 
 export default new VueRouter({

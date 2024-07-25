@@ -2,7 +2,7 @@ from flask_restful import Api, Resource,reqparse,marshal_with, fields
 from flask import current_app as app,jsonify,request
 from lms.models import db, Role, User
 from flask import render_template
-
+from flask_security import current_user
 from flask_security import auth_required, roles_required
 from flask_security.utils import hash_password
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -94,3 +94,16 @@ class UserLogin(Resource):
 
 
 
+@api.resource('/profile')
+class UserProfile(Resource):
+    @auth_required('token')
+    @roles_required('user')
+    def get(self):
+        user = current_user
+        print(user)
+        return {
+            'username': user.username,
+            'email': user.email,
+            'role': user.roles[0].name,
+            # Add more fields as necessary
+        }
