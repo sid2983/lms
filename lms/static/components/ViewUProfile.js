@@ -1,16 +1,23 @@
 export default {
     template: `
-    <div>
-        <h3>Profile Details</h3>
-        <div v-if="profile">
-            <p><strong>Username:</strong> {{ profile.username }}</p>
-            <p><strong>Email:</strong> {{ profile.email }}</p>
-            <p><strong>Role:</strong> {{ profile.role }}</p>
-            <div class="profile-pic">
-              <img :src="avatarUrl">
+    <div class=" m-2 p-5 w-75">
+        
 
-             </div>
+        <div class="card mb-3 " v-if="profile">
+            <img :src="barImg" style="height:10rem" class="card-img-top" alt="...">
+            <div class="card-body d-flex">
+                <div class="p-2">
+                    <img :src="avatarUrl" class="rounded-circle" style="width: 100px; height: 100px;" />
+
+                </div>
+                <div class="p-2">
+                    <h5 class="card-title">{{ profile.username }}</h5>
+                    <p class="card-text"><strong>Email:</strong> {{ profile.email }}</p>
+                    <p class="card-text"><strong>Role</strong> {{ profile.role }}</p>
+                </div>
+            </div>
         </div>
+        
     </div>
     `,
     data() {
@@ -24,8 +31,11 @@ export default {
 
     computed: {
         avatarUrl() {
-            return this.profile.profile_pic ? `/static/${this.profile.profile_pic}` : null;
+            return this.profile.profile_pic ? `/static/profile_pics/${this.profile.profile_pic}` : null;
 
+        },
+        barImg(){
+            return "/static/bar.jpg"
         }
     },
 

@@ -1,3 +1,6 @@
+import os
+import secrets
+from PIL import Image
 from flask_restful import Api, Resource,reqparse,marshal_with, fields
 from flask import current_app as app,jsonify,request
 from lms.models import db, Role, User
@@ -116,16 +119,52 @@ class UserProfile(Resource):
     
 
 
+def save_picture(form_picture):
+    if form_picture.filename == '':
+        return None
+    
+    # Generate a random hex string to ensure unique filenames
+    random_hex = secrets.token_hex(8)
+    _, file_extension = os.path.splitext(form_picture.filename)
+    picture_filename = random_hex + file_extension
+    profile_pics_path = os.path.join(app.root_path, 'static', 'profile_pics')
+    # Create the directory if it does not exist
+    if not os.path.exists(profile_pics_path):
+        os.makedirs(profile_pics_path)
+    
+    picture_path = os.path.join(profile_pics_path, picture_filename)
+    
+    # Resize image if needed (optional)
+    output_size = (125, 125)
+    try:
+        with Image.open(form_picture) as img:
+            img.thumbnail(output_size)
+            img.save(picture_path)
+    except Exception as e:
+        print(f"Error saving image: {e}")
+        return None
+
+    return picture_filename
+
+
+
 @api.resource('/profile/edit')
 class EditProfile(Resource):
     @auth_required('token')
     @roles_required('user')
     def put(self):
-        data = request.get_json()
         user = current_user
+        data = request.form
         user.username = data.get('username', user.username)
         user.email = data.get('email', user.email)
-        # Add more fields as necessary
+        print(data,data.get('username'))
+        
+        profile_pic = request.files.get('profile_pic')
+        if profile_pic:
+            picture_filename = save_picture(profile_pic)
+            if picture_filename:
+                user.profile_pic = picture_filename
+        
         db.session.commit()
-        return {'message': 'Profile updated successfully'}
+        return {'message': 'Profile updated successfully'}, 200
 

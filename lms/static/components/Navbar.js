@@ -8,7 +8,7 @@ export default {
     <div class="collapse navbar-collapse" id="navbarNavDropdown">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="#">Home</a>
+          <router-link class="nav-link active" aria-current="page" to="/">Home</router-link>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="#">Features</a>
@@ -30,14 +30,14 @@ export default {
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0 profile-menu" v-if="role"> 
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <div class="profile-pic">
-              <img :src="avatarUrl">
+            
+              <img :src="avatarUrl" class="rounded-circle" style="width: 30px; height: 30px;" />
 
-             </div>
+             
         
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="#"><i class="fas fa-sliders-h fa-fw"></i> Account</a></li>
+            <li><router-link class="dropdown-item" to="/profile/view"><i class="fas fa-sliders-h fa-fw"></i> Profile</router-link></li>
             <li><a class="dropdown-item" href="#"><i class="fas fa-cog fa-fw"></i> Settings</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt fa-fw"></i> Log Out</a></li>
