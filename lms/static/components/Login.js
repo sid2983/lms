@@ -15,6 +15,9 @@ export default {
             <div class="d-flex mt-3 justify-content-center">
                 <button class="btn btn-primary " @click='login'>Login</button>
             </div>
+
+            Not a registered user? Register <router-link to="/register">here</router-link>
+            
         </div>
     </div>
 
@@ -46,7 +49,7 @@ methods:{
             if(data.token){
                 localStorage.setItem('auth-token', data.token)
                 localStorage.setItem('user-role', data.role)
-                localStorage.setItem('profile-pic-url', data.profile_pic);
+                
                 this.$router.push({ path:'/'})
                 // if condition ---->
             }

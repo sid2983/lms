@@ -42,6 +42,60 @@
            border-top: 0;
            border-bottom: 0.3em solid;
          }
+
+
+         .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        
+        .modal-content {
+          background: white;
+          padding: 20px;
+          
+          border-radius: 5px;
+          width: 400px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          position: relative;
+        }
+        
+        .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding-bottom: 10px;
+          border-bottom: 1px solid #ddd;
+        }
+        .modal-body{
+          padding: 20px;
+        }
+        
+        .modal-title {
+          margin: 0;
+        }
+        
+        .close {
+          border: none;
+          background: transparent;
+          font-size: 1.5rem;
+          cursor: pointer;
+        }
+        .card{
+          
+          background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+          
+        }
+        .newform{
+          background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+
+        }
         </style>
 </head>
 <body>

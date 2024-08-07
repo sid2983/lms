@@ -19,6 +19,8 @@ export default {
             <div class="d-flex mt-3 justify-content-center">
                 <button class="btn btn-primary " @click='register'>Register</button>
             </div>
+
+            Already a registered user? Login <router-link to="/login">here</router-link>
         </div>
     </div>
 

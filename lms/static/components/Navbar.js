@@ -13,9 +13,7 @@ export default {
         <li class="nav-item">
           <a class="nav-link" href="#">Features</a>
         </li>
-        <li class="nav-item">
-          <button class="nav-link"  v-if='is_login' @click='logout'>Logout</button>
-        </li>
+        
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Dropdown link
@@ -37,10 +35,12 @@ export default {
         
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><router-link class="dropdown-item" to="/profile/view"><i class="fas fa-sliders-h fa-fw"></i> Profile</router-link></li>
+            <li v-if="role==='user'"><router-link class="dropdown-item" to="/profile/view"><i class="fas fa-sliders-h fa-fw"></i> Profile</router-link></li>
+            <li v-if="role==='librarian'"><router-link class="dropdown-item" to="/librarian/dashboard"><i class="fas fa-sliders-h fa-fw"></i> Librarian Dashboard</router-link></li>
             <li><a class="dropdown-item" href="#"><i class="fas fa-cog fa-fw"></i> Settings</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt fa-fw"></i> Log Out</a></li>
+            <li><button class="dropdown-item" v-if='is_login' @click='logout'><button class="fas fa-sliders-h fa-fw"></button> Logout</button></li>
+
           </ul>
         </li>
      </ul>
@@ -52,13 +52,39 @@ data(){
     return {
         role:localStorage.getItem('user-role'),
         is_login:localStorage.getItem('auth-token'),
+        profilePicUrl:''
         
 
     }
 },
 
+created() {
+  this.fetchProfile();
+},
 
 methods:{
+  async fetchProfile() {
+    if(this.role!=='user'){
+      this.profilePicUrl =  '/static/avatar.png';
+      return;
+    }
+    const res = await fetch('/api/profile', {
+        headers: {
+            "Authentication-Token": localStorage.getItem('auth-token')
+        }
+    });
+    if (res.ok) {
+        const profile = await res.json();
+        this.profilePicUrl = profile.profile_pic ? `/static/profile_pics/${profile.profile_pic}` : '/static/avatar.png';
+    }
+    else {
+        console.error("Failed to fetch profile");
+        
+        
+    }
+}
+
+  ,
     logout(){
         localStorage.removeItem('auth-token')
         localStorage.removeItem('user-role')
@@ -67,8 +93,7 @@ methods:{
 },
 computed:{
   avatarUrl(){
-    let image_url = localStorage.getItem('profile-pic-url') 
-    return '/static/profile_pics/'+image_url;
+    return this.profilePicUrl
   }
 }
 

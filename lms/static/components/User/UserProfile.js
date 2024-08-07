@@ -1,12 +1,12 @@
 import ViewUProfile from './ViewUProfile.js';
 import EditUProfile from './EditUProfile.js';
-// import ChangePassword from './ChangePassword.js';
-// import IssuedBooks from './IssuedBooks.js';
-// import Feedbacks from './Feedbacks.js';
+import ChangeUPass from './ChangeUPass.js';
+import IssuedBooks from './IssuedBooks.js';
+import Feedbacks from './Feedbacks.js';
 
 export default {
     template: `
-    <div>
+    <div class="container">
       <h2>User Profile</h2>
       <ul class="nav nav-tabs">
         <li class="nav-item">
@@ -30,14 +30,14 @@ export default {
     `,
     data() {
         return {
-            currentTab: 'view-profile'
+            currentTab: 'view'
         };
     },
     components: {
         ViewUProfile,
         EditUProfile,
-        // ChangePassword,
-        // IssuedBooks,
-        // Feedbacks
+        ChangeUPass,
+        IssuedBooks,
+        Feedbacks
     }
 }
