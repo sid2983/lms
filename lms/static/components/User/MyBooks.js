@@ -6,14 +6,16 @@ export default {
         <div class="col-md-12">
           <h4>Issued Books</h4>
           <div class="row">
-            <div v-for="book in issuedBooks" :key="book.id" class="col-md-12 mb-4">
-              <div class="card h-100 w-100 d-flex flex-row">
+            <div v-for="book in issuedBooks" :key="book.id" class="col-md-3 mb-4">
+              <div class="card h-100 w-100 d-flex flex-row border-0 shadow">
                 <img :src="getBookImageUrl(book)" class="card-img-left mx-2 my-auto rounded-2" style="width:60px;height:90px;" alt="Book Cover">
                 <div class="card-body d-flex flex-column">
                   <strong class="card-title">{{ book.name }}</strong>
-                  <p class="card-text">{{ book.author }}</p>
-                  <p class="card-text">Issued Date: {{ formatDate(book.issue_date) }}</p>
-                  <button v-if="book.returnable" @click="returnBook(book.id)" class="btn btn-danger mt-auto">Return Book</button>
+                  <span class="card-text">{{ book.author }}</span>
+                  <span class="card-text">Issued Date: {{ formatDate(book.issue_date) }}</span>
+                  <div class="p-2">
+                  <button v-if="book.returnable" @click="returnBook(book.id)" class="btn btn-outline-danger mt-auto">Return Book</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -25,12 +27,12 @@ export default {
           <h4>Pending Books</h4>
           <div class="row">
             <div v-for="book in pendingBooks" :key="book.id" class="col-md-12 mb-4">
-              <div class="card h-100 w-100 d-flex flex-row">
+              <div class="card h-100 w-100 d-flex flex-row border-0 shadow">
                 <img :src="getBookImageUrl(book)" class="card-img-left mx-2 my-auto rounded-2" style="width:60px;height:90px;" alt="Book Cover">
                 <div class="card-body d-flex flex-column">
                   <strong class="card-title">{{ book.name }}</strong>
-                  <p class="card-text">{{ book.author }}</p>
-                  <p class="card-text">Requested Date: {{ formatDate(book.request_date) }}</p>
+                  <span class="card-text">{{ book.author }}</span>
+                  <span class="card-text">Requested Date: {{ formatDate(book.request_date) }}</span>
                 </div>
               </div>
             </div>
@@ -42,12 +44,12 @@ export default {
           <h4>Successfully Read Books</h4>
           <div class="row">
             <div v-for="book in readBooks" :key="book.id" class="col-md-12 mb-4">
-              <div class="card h-100 w-100 d-flex flex-row">
+              <div class="card h-100 w-100 d-flex flex-row border-0 shadow">
                 <img :src="getBookImageUrl(book)" class="card-img-left mx-2 my-auto rounded-2" style="width:60px;height:90px;" alt="Book Cover">
                 <div class="card-body d-flex flex-column">
                   <strong class="card-title">{{ book.name }}</strong>
-                  <p class="card-text">{{ book.author }}</p>
-                  <p class="card-text">Read Date: {{ formatDate(book.read_date) }}</p>
+                  <span class="card-text">{{ book.author }}</span>
+                  <span class="card-text">Duration: {{ formatDate(book.issue_date)}} - {{ formatDate(book.till_read_date) }}</span>
                 </div>
               </div>
             </div>
@@ -85,6 +87,7 @@ export default {
         }
       },
       async returnBook(bookId) {
+        console.log(bookId);
         try {
           const response = await fetch(`/api/books/${bookId}/return`, {
             method: 'POST',

@@ -1,5 +1,7 @@
 import os
 import secrets
+from datetime import datetime, timedelta
+
 from PIL import Image
 from flask_restful import Api, Resource,reqparse,marshal_with, fields
 from flask import current_app as app,jsonify,request
@@ -472,7 +474,7 @@ def get_user_books():
     user_id = current_user.id
     
     # Fetch issued books
-    issued_books = IssuedBook.query.filter_by(user_id=user_id).all()
+    issued_books = IssuedBook.query.filter_by(user_id=user_id,status="active").all()
     issued_books_list = []
     for issued_book in issued_books:
         book = Book.query.get(issued_book.book_id)
@@ -481,8 +483,8 @@ def get_user_books():
             'name': book.name,
             'author': book.author,
             'img_file':book.img_file,
-            'issue_date': issued_book.issue_date,
-            'returnable': issued_book.return_date is None  # Assuming returnable if no return_date
+            'issue_date': issued_book.issued_date,
+            'returnable': issued_book.expected_return_date   # Assuming returnable if no return_date
         })
     
     # Fetch pending books
@@ -499,7 +501,7 @@ def get_user_books():
         })
 
     # Fetch read books (Assuming read books have a return_date set)
-    read_books = IssuedBook.query.filter_by(user_id=user_id).filter(IssuedBook.return_date.isnot(None)).all()
+    read_books = IssuedBook.query.filter_by(user_id=user_id).filter(IssuedBook.actual_return_date.isnot(None)).all()
     read_books_list = []
     for read_book in read_books:
         book = Book.query.get(read_book.book_id)
@@ -508,7 +510,8 @@ def get_user_books():
             'name': book.name,
             'author': book.author,
             'img_file':book.img_file,
-            'read_date': read_book.return_date  # Assuming return_date as read_date
+            'issue_date': read_book.issued_date,
+            'till_read_date': read_book.actual_return_date  # Assuming return_date as read_date
         })
 
     return jsonify({
@@ -518,3 +521,166 @@ def get_user_books():
     })
 
 
+
+
+
+
+request_fields = {
+    'id': fields.Integer,
+    'user_id': fields.Integer,
+    'book_id': fields.Integer,
+    'status': fields.String,
+    'request_date': fields.DateTime(dt_format='iso8601'),
+    'book_name': fields.String,
+    'book_author': fields.String,
+    'img_file': fields.String,
+    'username': fields.String,
+}
+
+issued_book_fields = {
+    'id': fields.Integer,
+    'book_id': fields.Integer,
+    'user_id': fields.Integer,
+    'issue_date': fields.DateTime(dt_format='iso8601'),
+    'expected_return_date': fields.DateTime(dt_format='iso8601'),
+    'actual_return_date': fields.DateTime(dt_format='iso8601'),
+    'status': fields.String,
+    'book_name': fields.String,
+    'book_author': fields.String,
+    'img_file': fields.String,
+    'username': fields.String,
+
+}
+
+
+
+@api.resource('/librarian/requests')
+class RequestManagement(Resource):
+    @auth_required('token')
+    @roles_required('librarian')
+    @marshal_with(request_fields)
+    def get(self):
+        # Get all pending requests
+        all_requests = RequestedBook.query.filter_by(status='pending').all()
+        
+        requests = [{
+            'id': request.id,
+            'user_id': request.user_id,
+            'book_id': request.book_id, 
+            'status': request.status, 
+            'request_date': request.request_date ,
+            'book_name':request.book.name,
+            'book_author':request.book.author,
+            'img_file':request.book.img_file,
+            'username':request.user.username,
+            } for request in all_requests]  
+        print(requests[0])
+        return requests, 200
+
+
+    # 
+    @auth_required('token')
+    @roles_required('librarian')
+    def post(self):
+        data = request.get_json()
+        request_id = data.get('request_id')
+        action = data.get('action')  # 'grant' or 'cancel'
+
+        request_entry = RequestedBook.query.get(request_id)
+        if not request_entry:
+            return {'message': 'Request not found'}, 404
+
+        if action == 'grant':
+            # Grant the request and issue the book
+            book = Book.query.get(request_entry.book_id)
+            if not book:
+                return {'message': 'Book not found'}, 404
+            
+            issued_book = IssuedBook(
+                book_id=book.id,
+                user_id=request_entry.user_id,
+                expected_return_date=datetime.now() + timedelta(days=7),
+                status='active'
+            )
+            db.session.add(issued_book)
+            request_entry.status = 'approved'
+            db.session.commit()
+            return {'message': 'Request granted and book issued'}, 200
+
+        elif action == 'cancel':
+            # Cancel the request
+            request_entry.status = 'rejected'
+            db.session.commit()
+            return {'message': 'Request cancelled'}, 200
+
+        return {'message': 'Invalid action'}, 400
+    
+
+
+
+@api.resource('/librarian/issued-books')
+class IssuedBooksManagement(Resource):
+    @auth_required('token')
+    @roles_required('librarian')
+    @marshal_with(issued_book_fields)
+    def get(self):
+        # Get all issued books
+        issued_books = IssuedBook.query.all()
+        issued_books = [{
+            'id': issued_book.id,
+            'book_id': issued_book.book_id,
+            'user_id': issued_book.user_id,
+            'issue_date': issued_book.issued_date,
+            'expected_return_date': issued_book.expected_return_date,
+            'actual_return_date': issued_book.actual_return_date,
+            'status': issued_book.status,
+            'book_name': issued_book.book.name,
+            'book_author': issued_book.book.author,
+            'img_file': issued_book.book.img_file,
+            'username': issued_book.user.username,
+        } for issued_book in issued_books]
+        return issued_books, 200
+
+
+    # Revoke access manually by librarian
+
+    @auth_required('token')
+    @roles_required('librarian')
+    def post(self):
+        data = request.get_json()
+        issued_book_id = data.get('issued_book_id')
+        action = data.get('action')  # 'revoke'
+
+        issued_book = IssuedBook.query.get(issued_book_id)
+        if not issued_book:
+            return {'message': 'Issued book not found'}, 404
+
+        if action == 'revoke':
+            issued_book.status = 'revoked'
+            issued_book.actual_return_date = datetime.now()
+            db.session.commit()
+            return {'message': 'Access revoked and book returned'}, 200
+
+        return {'message': 'Invalid action'}, 400
+    
+
+
+
+@api.resource('/books/<int:book_id>/return')
+class ReturnBookResource(Resource):
+    @auth_required('token')
+    @roles_required('user')
+    def post(self, book_id):
+        user_id = current_user.id
+        # Fetch the issued book record
+        issued_book = IssuedBook.query.filter_by(book_id=book_id, user_id=user_id, status='active').first()
+        
+        if not issued_book:
+            return {'message': 'Book is not issued to this user or already returned'}, 404
+        
+        # Update the book status and return date
+        issued_book.status = 'returned'
+        issued_book.actual_return_date = datetime.now()
+        db.session.commit()
+        
+        return {'message': 'Book returned successfully'}, 200

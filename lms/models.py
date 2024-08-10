@@ -69,8 +69,7 @@ class Book(db.Model):
     section_id = db.Column(db.Integer(), db.ForeignKey('section.id'))
     section = db.relationship('Section', backref=db.backref('books', lazy='dynamic'))
 
-    issued_books = db.relationship('IssuedBook', backref='book', lazy='dynamic')
-    requested_books = db.relationship('RequestedBook', backref='book', lazy='dynamic')
+
 
     def __repr__(self):
         return f"Book('{self.name}')"
@@ -81,8 +80,14 @@ class IssuedBook(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     user_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
     book_id = db.Column(db.Integer(), db.ForeignKey('book.id'))
-    issue_date = db.Column(db.DateTime())
-    return_date = db.Column(db.DateTime())
+    issued_date = db.Column(db.DateTime, default=datetime.now())
+    expected_return_date = db.Column(db.DateTime, nullable=False)
+    actual_return_date = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(10), default='active', nullable=False) # 'active', 'returned', 'revoked'
+
+    user = db.relationship('User', backref=db.backref('issued_books', lazy='dynamic'))
+    book = db.relationship('Book', backref=db.backref('issued_books', lazy='dynamic'))
+
 
 
 class RequestedBook(db.Model):
@@ -95,6 +100,7 @@ class RequestedBook(db.Model):
     status = db.Column(db.String(50), default='pending')  # 'pending', 'approved', 'rejected'
 
     user = db.relationship('User', backref=db.backref('requested_books', lazy='dynamic'))
+    book = db.relationship('Book', backref=db.backref('requested_books', lazy='dynamic'))
     
 
     def __repr__(self):
