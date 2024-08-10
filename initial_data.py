@@ -28,3 +28,13 @@ with app.app_context():
     
     print("Initial data added successfully")
     print("Database initialization completed")
+
+
+
+
+
+
+
+
+
+

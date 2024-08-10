@@ -1,6 +1,6 @@
 export default {
     template: `<nav class="navbar navbar-expand-lg bg-body-tertiary">
-  <div class="container-fluid">
+  <div class="container">
     <a class="navbar-brand" href="#">LMS</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -10,20 +10,11 @@ export default {
         <li class="nav-item">
           <router-link class="nav-link active" aria-current="page" to="/">Home</router-link>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Features</a>
+        <li v-if="role==='user'" class="nav-item">
+        <router-link class="nav-link active" aria-current="page" to="/user/dashboard/available-books">Books</router-link>
         </li>
         
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Dropdown link
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#">Action</a></li>
-            <li><a class="dropdown-item" href="#">Another action</a></li>
-            <li><a class="dropdown-item" href="#">Something else here</a></li>
-          </ul>
-        </li>
+        
       </ul>
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0 profile-menu" v-if="role"> 
         <li class="nav-item dropdown">
@@ -36,6 +27,7 @@ export default {
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
             <li v-if="role==='user'"><router-link class="dropdown-item" to="/profile/view"><i class="fas fa-sliders-h fa-fw"></i> Profile</router-link></li>
+            <li v-if="role==='user'"><router-link class="dropdown-item" to="/user/dashboard/available-books"><i class="fas fa-sliders-h fa-fw"></i> User Dashboard</router-link></li>
             <li v-if="role==='librarian'"><router-link class="dropdown-item" to="/librarian/dashboard"><i class="fas fa-sliders-h fa-fw"></i> Librarian Dashboard</router-link></li>
             <li><a class="dropdown-item" href="#"><i class="fas fa-cog fa-fw"></i> Settings</a></li>
             <li><hr class="dropdown-divider"></li>

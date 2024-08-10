@@ -3,7 +3,7 @@ import secrets
 from PIL import Image
 from flask_restful import Api, Resource,reqparse,marshal_with, fields
 from flask import current_app as app,jsonify,request
-from lms.models import db, Role, User, Section, Book
+from lms.models import db, Role, User, Section, Book, IssuedBook, RequestedBook
 from flask import render_template
 from flask_security import current_user
 from flask_security import auth_required, roles_required
@@ -246,9 +246,23 @@ class SectionManagement(Resource):
         if not section:
             return {'message': 'Section not found'}, 404
         
-        db.session.delete(section)
-        db.session.commit()
-        return {'message': 'Section deleted'}, 200
+        try:
+        # Assuming you have a relationship set up in your Section model
+            related_books = Book.query.filter_by(section_id=section_id).all()
+
+            # Delete related books
+            for book in related_books:
+                db.session.delete(book)
+                print("Books deleted")
+
+            db.session.delete(section)
+            db.session.commit()
+            return {'message': 'Section deleted'}, 200
+        
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error deleting section and related books: {e}")
+            return {'message': 'An error occurred while deleting the section'}, 500
     
 
 
@@ -400,3 +414,107 @@ class EbookManagement(Resource):
         db.session.delete(book)
         db.session.commit()
         return {'message': 'Book deleted'}, 200
+
+
+
+
+
+
+
+
+
+################### USERS Dashboard  #########################
+
+
+
+@app.route('/api/books/available', methods=['GET'])
+@auth_required('token')
+def get_available_books():
+    # Assuming 'Book' and 'IssuedBook' models are defined
+    available_books = db.session.query(Book).outerjoin(IssuedBook).filter(IssuedBook.id.is_(None)).all()
+    books = [{'id': book.id, 'name': book.name, 'author': book.author, 'img_file':book.img_file} for book in available_books]
+    return jsonify(books), 200
+
+
+@app.route('/api/books/<int:book_id>/request', methods=['POST'])
+def request_book(book_id):
+    # Check if the book exists
+    book = Book.query.get(book_id)
+    if not book:
+        return jsonify({'message': 'Book not found'}), 404
+    
+    requests = RequestedBook.query.filter_by(user_id=current_user.id).all()
+    if len(requests) >= 5:
+        return jsonify({'error': 'You have reached the maximum limit of book requests'}), 410
+    
+    existing_request = RequestedBook.query.filter_by(
+        user_id=current_user.id,
+        book_id=book_id,
+        status='pending'
+    ).first()
+
+    if existing_request:
+        return jsonify({'error': 'You have already requested this book.'}), 400
+
+    # Create a RequestedBook record with the current_user
+    requested_book = RequestedBook(user_id=current_user.id, book_id=book_id, status='pending')
+    db.session.add(requested_book)
+    db.session.commit()
+
+    return jsonify({'message': 'Book requested successfully'}), 201
+
+
+
+
+
+@app.route('/api/user/my-books', methods=['GET'])
+def get_user_books():
+    user_id = current_user.id
+    
+    # Fetch issued books
+    issued_books = IssuedBook.query.filter_by(user_id=user_id).all()
+    issued_books_list = []
+    for issued_book in issued_books:
+        book = Book.query.get(issued_book.book_id)
+        issued_books_list.append({
+            'id': book.id,
+            'name': book.name,
+            'author': book.author,
+            'img_file':book.img_file,
+            'issue_date': issued_book.issue_date,
+            'returnable': issued_book.return_date is None  # Assuming returnable if no return_date
+        })
+    
+    # Fetch pending books
+    pending_books = RequestedBook.query.filter_by(user_id=user_id, status='pending').all()
+    pending_books_list = []
+    for pending_book in pending_books:
+        book = Book.query.get(pending_book.book_id)
+        pending_books_list.append({
+            'id': book.id,
+            'name': book.name,
+            'author': book.author,
+            'img_file':book.img_file,
+            'request_date': pending_book.request_date
+        })
+
+    # Fetch read books (Assuming read books have a return_date set)
+    read_books = IssuedBook.query.filter_by(user_id=user_id).filter(IssuedBook.return_date.isnot(None)).all()
+    read_books_list = []
+    for read_book in read_books:
+        book = Book.query.get(read_book.book_id)
+        read_books_list.append({
+            'id': book.id,
+            'name': book.name,
+            'author': book.author,
+            'img_file':book.img_file,
+            'read_date': read_book.return_date  # Assuming return_date as read_date
+        })
+
+    return jsonify({
+        'issuedBooks': issued_books_list,
+        'pendingBooks': pending_books_list,
+        'readBooks': read_books_list
+    })
+
+

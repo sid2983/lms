@@ -42,7 +42,7 @@ export default {
         </div>
         <div class="card-footer mt-auto border-0">
           <button @click="openEditModal(section)" class="btn btn-secondary btn-sm">Edit</button>
-          <button @click="deleteSection(section.id)" class="btn btn-danger btn-sm">Delete</button>
+          <button @click="prepareDelete(section.id)" class="btn btn-danger btn-sm">Delete</button>
         </div>
           </div>
         </div>
@@ -89,6 +89,23 @@ export default {
         </div>
       </div>
     </div>
+
+
+    <div v-if="showDeleteModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Section</h5>
+                    <button type="button" class="close float-end" @click="cancelDelete">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>This section has some books. Do you really want to delete the section? If you do, the books related to this section will also be purged.</p>
+                </div>
+                <div class="modal-footer">
+                    <button @click="confirmDelete" class="btn btn-danger">Yes, Delete</button>&nbsp;&nbsp;&nbsp;
+                    <button @click="cancelDelete" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
         
     </div>
     `,
@@ -98,7 +115,9 @@ export default {
             newSectionDesc: '',
             sections: [] ,
             showEditModal: false,
-            editSection: {}
+            showDeleteModal: false,
+            editSection: {},
+            sectionToDelete: null,
         };
     },
     methods: {
@@ -178,9 +197,16 @@ export default {
             }
             
         },
-        async deleteSection(id) {
+        prepareDelete(id) {
+            // Store the section ID and show the confirmation modal
+            this.sectionToDelete = id;
+            this.showDeleteModal = true;
+        },
+        
+
+        async confirmDelete() {
             try {
-                const response = await fetch(`/api/sections/${id}`, {
+                const response = await fetch(`/api/sections/${this.sectionToDelete}`, {
                     method: 'DELETE',
                     headers: {
                         'Authentication-Token': localStorage.getItem('auth-token')
@@ -190,11 +216,20 @@ export default {
                 if (response.ok) {
                     this.fetchSections(); // Refresh the section list
                 } else {
-                    console.error('Failed to delete section');
+                    console.error('Failed to delete section and books');
                 }
             } catch (error) {
-                console.error('Error deleting section:', error);
+                console.error('Error deleting section and books:', error);
+            } finally {
+                // Close the modal
+                this.showDeleteModal = false;
+                this.sectionToDelete = null;
             }
+        },
+        cancelDelete() {
+            // Close the modal without deleting
+            this.showDeleteModal = false;
+            this.sectionToDelete = null;
         }
     },
     created() {

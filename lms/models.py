@@ -70,6 +70,7 @@ class Book(db.Model):
     section = db.relationship('Section', backref=db.backref('books', lazy='dynamic'))
 
     issued_books = db.relationship('IssuedBook', backref='book', lazy='dynamic')
+    requested_books = db.relationship('RequestedBook', backref='book', lazy='dynamic')
 
     def __repr__(self):
         return f"Book('{self.name}')"
@@ -83,6 +84,22 @@ class IssuedBook(db.Model):
     issue_date = db.Column(db.DateTime())
     return_date = db.Column(db.DateTime())
 
+
+class RequestedBook(db.Model):
+    __tablename__ = 'requested_book'
+
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
+    book_id = db.Column(db.Integer(), db.ForeignKey('book.id'))
+    request_date = db.Column(db.DateTime(), default=datetime.now())
+    status = db.Column(db.String(50), default='pending')  # 'pending', 'approved', 'rejected'
+
+    user = db.relationship('User', backref=db.backref('requested_books', lazy='dynamic'))
+    
+
+    def __repr__(self):
+        return f"RequestedBook(user_id={self.user_id}, book_id={self.book_id}, status={self.status})"
+
 class Feedback(db.Model):
     __tablename__ = 'feedback'
 
@@ -91,6 +108,10 @@ class Feedback(db.Model):
     book_id = db.Column(db.Integer(), db.ForeignKey('book.id'))
     rating = db.Column(db.Integer())
     comment = db.Column(db.Text())
+    date_given = db.Column(db.DateTime(), default=datetime.now())
+
+    user = db.relationship('User', backref=db.backref('feedback', lazy=True))
+    ebook = db.relationship('Book', backref=db.backref('feedback', lazy=True))
 
     def __repr__(self):
         return f"Feedback('{self.rating}')"
