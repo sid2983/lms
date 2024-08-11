@@ -421,6 +421,53 @@ class EbookManagement(Resource):
 
 
 
+issued_book_fields = {
+    'id': fields.Integer,
+    'book_id': fields.Integer,
+    'issued_date': fields.DateTime,
+    'expected_return_date': fields.DateTime,
+    'actual_return_date': fields.DateTime,
+    'status': fields.String,
+    'book': fields.Nested({
+        'id': fields.Integer,
+        'name': fields.String,
+        'author': fields.String
+    })
+}
+
+user_fields = {
+    'id': fields.Integer,
+    'username': fields.String,
+    'email': fields.String,
+    'profile_pic': fields.String,
+    'issued_books': fields.List(fields.Nested(issued_book_fields))
+}
+
+
+
+
+@api.resource('/librarian/users')
+class UserList(Resource):
+    @auth_required('token')
+    @roles_required('librarian')
+    @marshal_with(user_fields)
+    def get(self):
+        #get users with 'user' role
+        users = User.query.filter(User.roles.any(Role.name=='user')).all()
+        for user in users:
+            issued_books = IssuedBook.query.filter_by(user_id=user.id).all()
+            user.issued_books = issued_books
+        return users, 200
+        
+        
+
+
+
+
+
+
+
+
 
 
 
@@ -432,9 +479,28 @@ class EbookManagement(Resource):
 @app.route('/api/books/available', methods=['GET'])
 @auth_required('token')
 def get_available_books():
-    # Assuming 'Book' and 'IssuedBook' models are defined
-    available_books = db.session.query(Book).outerjoin(IssuedBook).filter(IssuedBook.id.is_(None)).all()
+
+    search_query = request.args.get('search', '').lower()
+    print(search_query)
+    query = db.session.query(Book).outerjoin(IssuedBook).outerjoin(Section).filter(
+    (IssuedBook.id.is_(None)) | (IssuedBook.status.in_(['returned', 'revoked']))
+)
+    if search_query:
+        query = query.filter(
+            db.or_(
+                Book.name.ilike(f'%{search_query}%'),
+                Book.author.ilike(f'%{search_query}%'),
+                Section.name.ilike(f'%{search_query}%')
+                # check for section name
+                
+                
+            )
+        )
+    available_books = query.all()
+    print(available_books)
+
     books = [{'id': book.id, 'name': book.name, 'author': book.author, 'img_file':book.img_file} for book in available_books]
+
     return jsonify(books), 200
 
 
@@ -537,7 +603,7 @@ request_fields = {
     'username': fields.String,
 }
 
-issued_book_fields = {
+issued_book_fields_new = {
     'id': fields.Integer,
     'book_id': fields.Integer,
     'user_id': fields.Integer,
@@ -622,7 +688,7 @@ class RequestManagement(Resource):
 class IssuedBooksManagement(Resource):
     @auth_required('token')
     @roles_required('librarian')
-    @marshal_with(issued_book_fields)
+    @marshal_with(issued_book_fields_new)
     def get(self):
         # Get all issued books
         issued_books = IssuedBook.query.all()

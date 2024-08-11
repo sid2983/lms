@@ -18,8 +18,12 @@
 #     return app, datastore
 
 from lms import create_app
+from lms.worker import celery_init_app
+
+
 app, datastore = create_app()
 
+celery_app = celery_init_app(app)
 
 
 if __name__ == '__main__':

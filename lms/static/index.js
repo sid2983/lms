@@ -4,14 +4,7 @@ import Navbar from "./components/Navbar.js";
 
 
 
-// router.beforeEach((to, from, next) => {
-//     if (to.name !== 'Login' && !localStorage.getItem('auth-token') ? true : false) 
-//         next({name:'Login'})
-//     else if ((to.name !== 'Login' || to.name !== 'Register') && !localStorage.getItem('auth-token') ? true : false) 
-//         next()
-//     else next()
-    
-// })
+
 
 router.beforeEach((to, from, next) => {
     // Check if the user is authenticated

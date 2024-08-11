@@ -25,8 +25,8 @@ export default {
         <!-- Pending Books (Horizontal Cards) -->
         <div class="col-md-12">
           <h4>Pending Books</h4>
-          <div class="row">
-            <div v-for="book in pendingBooks" :key="book.id" class="col-md-12 mb-4">
+          <div class="row ">
+            <div v-for="book in pendingBooks" :key="book.id" class="col-md-12 mb-2">
               <div class="card h-100 w-100 d-flex flex-row border-0 shadow">
                 <img :src="getBookImageUrl(book)" class="card-img-left mx-2 my-auto rounded-2" style="width:60px;height:90px;" alt="Book Cover">
                 <div class="card-body d-flex flex-column">

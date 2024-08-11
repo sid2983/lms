@@ -1,3 +1,5 @@
+
+
 export default {
     template: `<nav class="navbar navbar-expand-lg bg-body-tertiary">
   <div class="container">
@@ -16,6 +18,10 @@ export default {
         
         
       </ul>
+      
+      
+      
+      </div>
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0 profile-menu" v-if="role"> 
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -44,7 +50,8 @@ data(){
     return {
         role:localStorage.getItem('user-role'),
         is_login:localStorage.getItem('auth-token'),
-        profilePicUrl:''
+        profilePicUrl:'',
+        
         
 
     }
@@ -81,7 +88,9 @@ methods:{
         localStorage.removeItem('auth-token')
         localStorage.removeItem('user-role')
         this.$router.push('/login')
-    }
+    },
+
+    
 },
 computed:{
   avatarUrl(){

@@ -23,6 +23,8 @@ class User(db.Model, UserMixin):
     profile_pic = db.Column(db.String(128),nullable=False, default='avatar.png')
 
     roles = db.relationship('Role', secondary=roles_users, backref=db.backref('users', lazy='dynamic'))
+    
+    
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
