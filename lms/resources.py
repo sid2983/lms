@@ -90,6 +90,10 @@ class UserLogin(Resource):
                 if not role:
                     return {'message': 'User has no role assigned'}, 400
                 profile_pic_url = user.profile_pic
+
+                # set last login time of 2 days before
+                user.last_login = datetime.now() - timedelta(days=2)
+                db.session.commit()
                 
                 return {
                     'token': user.get_auth_token(),
