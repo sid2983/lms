@@ -33,8 +33,8 @@ def send_email(sender, **kwargs):
     print("Celery email configured")
     # sender.add_periodic_task(30.0, test.s('hello'), name='add every 30')
     sender.add_periodic_task(
-        crontab(hour=14, minute=4, day_of_week=1),
-        daily_reminder.s("sid24000576@gmail.com","test-celery-check","<html><body><h1>"+" Hello Guys !!"+"</h1></body></html>"),
+        crontab(hour=14, minute=49, day_of_week='*'),
+        daily_reminder.s(),
     )
 
 

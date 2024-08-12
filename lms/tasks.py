@@ -1,7 +1,9 @@
 from celery import shared_task
-from lms.models import Book
+from lms.models import Book,User
 import flask_excel as excel    
 from .mail_service import send_message 
+from datetime import datetime, timedelta
+
 
 
 @shared_task(ignore_result=False)
@@ -23,8 +25,26 @@ def create_resource_csv():
 
 
 @shared_task(ignore_result=True)
-def daily_reminder(to,subject,message):
-    send_message(to,subject,"<html><body><h1>"+" Hello Guys !!"+"</h1></body></html>")   
-    return "OK"
+def daily_reminder():
+
+    now = datetime.now()
+    day_start = now - timedelta(days=1)
+    inactive_users = User.query.filter(User.last_login < day_start).all()
+    print(inactive_users)
+
+    for user in inactive_users:
+        subject = "Reminder: LMS APP"
+        message = f"""
+        <html>
+        <body>
+        <h1>Hello {user.username}!</h1>
+        <p>We've noticed that you haven't visited our app in a while. We miss you and hope to see you back soon!</p>
+        <p><a href="http://your-app-url">Visit Now</a></p>
+        </body>
+        </html>
+        """
+        send_message(user.email, subject, message)
+
+    return "Daily reminders sent to all inactive users"
 
 

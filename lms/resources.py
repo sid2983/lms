@@ -91,8 +91,8 @@ class UserLogin(Resource):
                     return {'message': 'User has no role assigned'}, 400
                 profile_pic_url = user.profile_pic
 
-                # set last login time of 2 days before
-                user.last_login = datetime.now() - timedelta(days=2)
+                # Update last login time
+                user.last_login = datetime.now()
                 db.session.commit()
                 
                 return {
