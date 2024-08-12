@@ -72,7 +72,6 @@ class Book(db.Model):
     section = db.relationship('Section', backref=db.backref('books', lazy='dynamic'))
 
 
-
     def __repr__(self):
         return f"Book('{self.name}')"
 

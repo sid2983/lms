@@ -1,27 +1,36 @@
 export default {
     template: `
-    <div>
-        <h2>Stats</h2>
-        <div class="row">
-            <div class="col-md-4" v-for="book in books" :key="book.id">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title
-                        ">{{ book.title }}</h5>
-                        <p class="card-text">{{ book.author }}</p>
-                        <p class="card-text">{{ book.isbn }}</p>
-                        <p class="card-text">{{ book.section }}</p>
-                        <p class="card-text">{{ book.copies }}</p>
-                        
-                    </div>
-
-                </div>
-            </div>
-
-        </div>
+    <div class="container">
+        <span> Download Books CSV from here : </span> <button class="btn btn-outline-primary" @click="downloadBook"> Download Resource </button>
+        <span v-if="isWaiting"> Waiting .... </span>
+        
 
     </div>
 
     `,
+    data(){
+        return {
+            isWaiting :false,
+        }
+    },
+
+    methods:{
+        async downloadBook(){
+            this.isWaiting = true;
+            const res = await fetch('/download-csv')
+            const data = await res.json()
+            if(res.ok){
+                const taskId = data['task-id']
+                const intv = setInterval(async () => {
+                    const csv_res = await fetch(`/get-csv/${taskId}`)
+                    if(csv_res.ok){
+                        this.isWaiting = false
+                        clearInterval(intv)
+                        window.location.href = `/get-csv/${taskId}`
+                    }
+                })
+            }
+        },
+    },
 
 }

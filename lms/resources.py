@@ -1,10 +1,12 @@
 import os
 import secrets
 from datetime import datetime, timedelta
-
+from .tasks import create_resource_csv
+import flask_excel as excel
+from celery.result import AsyncResult
 from PIL import Image
 from flask_restful import Api, Resource,reqparse,marshal_with, fields
-from flask import current_app as app,jsonify,request
+from flask import current_app as app,jsonify,request, send_file
 from lms.models import db, Role, User, Section, Book, IssuedBook, RequestedBook
 from flask import render_template
 from flask_security import current_user
@@ -750,3 +752,39 @@ class ReturnBookResource(Resource):
         db.session.commit()
         
         return {'message': 'Book returned successfully'}, 200
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@app.get('/download-csv')
+def download_csv():
+    task = create_resource_csv.delay()
+    return jsonify({"task-id":task.id})     
+    
+
+
+
+@app.get('/get-csv/<task_id>')
+def get_csv(task_id):
+    res = AsyncResult(task_id)
+    if res.ready():
+        filename = res.result
+        files_directory = "/home/sidx576/Documents/lms"
+        file_path = os.path.join(files_directory, filename)
+        print(file_path)
+        return send_file(file_path,as_attachment=True)
+    else:
+        return jsonify({"message":"Task Pending"}), 404
+
