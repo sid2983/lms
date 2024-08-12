@@ -19,6 +19,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     active = db.Column(db.Boolean(), default=True)
+    
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
     profile_pic = db.Column(db.String(128),nullable=False, default='avatar.png')
 

@@ -1,6 +1,7 @@
 from celery import shared_task
 from lms.models import Book
-import flask_excel as excel     
+import flask_excel as excel    
+from .mail_service import send_message 
 
 
 @shared_task(ignore_result=False)
@@ -20,6 +21,10 @@ def create_resource_csv():
     return filename
 
 
-     
+
+@shared_task(ignore_result=True)
+def daily_reminder(to,subject,message):
+    send_message(to,subject,"<html><body><h1>"+" Hello Guys !!"+"</h1></body></html>")   
+    return "OK"
 
 
